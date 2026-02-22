@@ -152,12 +152,12 @@ def calculate_image_lines(string: str, target_height: int, canvas_width: int) ->
 			proposed_top_width = _get_league_spartan_line_width(proposed_top_line, font)
 			proposed_bottom_width = _get_league_spartan_line_width(proposed_bottom_line, font)
 
+			# Store the ratio of the current top and bottom lines. If the ratio between the two is very large (i.e. the top line is tiny and the bottom line is huge), then we want to move the next word up even if it currently fits. See <https://standardebooks.org/ebooks/hans-jakob-christoffel-von-grimmelshausen/the-adventurous-simplicissimus/alfred-thomas-scrope-goodrick>.
 			current_lines_ratio = bottom_width / top_width
 
 			# If proposed top line is now wider than the bottom and a further balancing step isn’t necessary, abort.
-			if proposed_top_width > proposed_bottom_width:
-				if current_lines_ratio < 2:
-					break
+			if proposed_top_width > proposed_bottom_width and current_lines_ratio < 2:
+				break
 
 			top_width = proposed_top_width
 			bottom_width = proposed_bottom_width
