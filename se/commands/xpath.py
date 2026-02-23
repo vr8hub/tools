@@ -51,8 +51,17 @@ def xpath(plain_output: bool) -> int:
 								output = f"Line {node.sourceline}: {node.to_string()}"
 							else:
 								output = f"[path][link=file://{filepath.resolve()}#L{node.sourceline}]Line {node.sourceline}[/][/]: {node.to_string().replace('[', '\\[')}"
+
+						elif isinstance(node, str):
+							if plain_output:
+								output = node
+							else:
+								output = node.replace('[', '\\[')
+
+						elif isinstance(node, float):
+							output = str(node)
+
 						else:
-							# We may select `text()` nodes as a result.
 							if plain_output:
 								output = f"Line {node.getparent().sourceline}: {str(node)}"
 							else:
