@@ -388,6 +388,9 @@ def typogrify(xhtml: str, smart_quotes: bool = True) -> str:
 	# Fix a common error.
 	xhtml = regex.sub(r"<p>”⁠ ⁠…", "<p>“⁠ ⁠…", xhtml)
 
+	# `Ph. D.` should have a hair space.
+	xhtml = regex.sub(r"\bPh\.?\s?[Dd]\.", "Ph. D.", xhtml)
+
 	return xhtml
 
 def hyphenate(xhtml: str | EasyXmlTree, language: str | None, ignore_h_tags: bool = False) -> str:
