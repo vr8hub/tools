@@ -152,11 +152,11 @@ def semanticate(xhtml: str) -> str:
 	# Otherwise, get rid of any periods in `TV`.
 	xhtml = regex.sub(r"(?<!(?:\.|\B|\<abbr[^>]*?\>))(?:TV\b|T\.V\.\B)", r"""<abbr epub:type="z3998:initialism">TV</abbr>""", xhtml)
 	# Keep a period after `AD`/`BC` that terminates a clause.
-	xhtml = regex.sub(r"(?<!(?:\.|\B|\<abbr[^>]*?\>))A\.?D\.([”’]?</p>|\s+[“‘]?[\p{Uppercase_Letter}])", r"""<abbr epub:type="se:era">AD</abbr>.\1""", xhtml)
-	xhtml = regex.sub(r"(?<!(?:\.|\B|\<abbr[^>]*?\>))B\.?C\.([”’]?</p>|\s+[“‘]?[\p{Uppercase_Letter}])", r"""<abbr epub:type="se:era">BC</abbr>.\1""", xhtml)
+	xhtml = regex.sub(r"(?<!(?:\.|\B|\<abbr[^>]*?\>))A\.?D\.([”’]?</p>|\s+[“‘]?[\p{Uppercase_Letter}])", r"""<abbr epub:type="se:era z3998:initialism">AD</abbr>.\1""", xhtml)
+	xhtml = regex.sub(r"(?<!(?:\.|\B|\<abbr[^>]*?\>))B\.?C\.([”’]?</p>|\s+[“‘]?[\p{Uppercase_Letter}])", r"""<abbr epub:type="se:era z3998:initialism">BC</abbr>.\1""", xhtml)
 	# Otherwise, get rid of any periods in `AD`/`BC`.
-	xhtml = regex.sub(r"(?<!(?:\.|\B|\<abbr[^>]*?\>))(?:AD\b|A\.D\.\B)", r"""<abbr epub:type="se:era">AD</abbr>""", xhtml)
-	xhtml = regex.sub(r"(?<!(?:\.|\B|\<abbr[^>]*?\>))(?:BC\b|B\.C\.\B)", r"""<abbr epub:type="se:era">BC</abbr>""", xhtml)
+	xhtml = regex.sub(r"(?<!(?:\.|\B|\<abbr[^>]*?\>))(?:AD\b|A\.D\.\B)", r"""<abbr epub:type="se:era z3998:initialism">AD</abbr>""", xhtml)
+	xhtml = regex.sub(r"(?<!(?:\.|\B|\<abbr[^>]*?\>))(?:BC\b|B\.C\.\B)", r"""<abbr epub:type="se:era z3998:initialism">BC</abbr>""", xhtml)
 
 	# Wrap £sd shorthand.
 	xhtml = regex.sub(r"([0-9½¼¾⅙⅚⅛⅜⅝⅞]+)([sd]\.)", r"\1<abbr>\2</abbr>", xhtml)

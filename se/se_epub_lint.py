@@ -86,6 +86,8 @@ SE_VARIABLES = [
 	"PAINTING"
 ]
 
+ABBR_REQUIRING_STYLES = ["se:era", "se:temperature", "z3998:acronym"]
+
 # See <https://idpf.github.io/epub-vocabs/structure/>.
 EPUB_SEMANTIC_VOCABULARY = ["abstract", "acknowledgments", "afterword", "answer", "answers", "appendix", "aside", "assessment", "assessments", "backlink", "backmatter", "balloon", "biblioentry", "bibliography", "biblioref", "bodymatter", "bridgehead", "case-study", "chapter", "colophon", "concluding-sentence", "conclusion", "contributors", "copyright-page", "cover", "covertitle", "credit", "credits", "dedication", "division", "endnote", "endnotes", "epigraph", "epilogue", "errata", "feedback", "figure", "fill-in-the-blank-problem", "footnote", "footnotes", "foreword", "frontmatter", "fulltitle", "general-problem", "glossary", "glossdef", "glossref", "glossterm", "halftitle", "halftitlepage", "imprimatur", "imprint", "index", "index-editor-note", "index-entry", "index-entry-list", "index-group", "index-headnotes", "index-legend", "index-locator", "index-locator-list", "index-locator-range", "index-term", "index-term-categories", "index-term-category", "index-xref-preferred", "index-xref-related", "introduction", "keyword", "keywords", "label", "landmarks", "learning-objective", "learning-objectives", "learning-outcome", "learning-outcomes", "learning-resource", "learning-resources", "learning-standard", "learning-standards", "list", "list-item", "loa", "loi", "lot", "lov", "match-problem", "multiple-choice-problem", "noteref", "notice", "ordinal", "other-credits", "pagebreak", "page-list", "panel", "panel-group", "part", "practice", "practices", "preamble", "preface", "prologue", "pullquote", "qna", "question", "revision-history", "seriespage", "sound-area", "subtitle", "table", "table-cell", "table-row", "text-area", "tip", "title", "titlepage", "toc", "toc-brief", "topic-sentence", "true-false-problem", "volume"]
 
@@ -2896,8 +2898,8 @@ def _lint_xhtml_typography_checks(source_file: SourceFile, dom: se.easy_xml.Easy
 	if matches:
 		messages.append(LintMessage("t-029", "Period followed by lowercase letter. Hint: Abbreviations require an [xhtml]<abbr>[/] element.", se.MESSAGE_TYPE_WARNING, filename, LintSubmessage.from_matches(matches)))
 
-	# Check for initialisms without periods.
-	nodes = [node for node in dom.xpath("/html/body//abbr[contains(@epub:type, 'z3998:initialism') and not(re:test(., '^[0-9]*([a-zA-Z]\\.)+[0-9]*$'))]") if node.text not in INITIALISM_EXCEPTIONS]
+	# Check for initialisms without periods, except `se:era`, which are initialisms styled without periods.
+	nodes = [node for node in dom.xpath("/html/body//abbr[contains(@epub:type, 'z3998:initialism') and not(contains(@epub:type, 'se:era')) and not(re:test(., '^[0-9]*([a-zA-Z]\\.)+[0-9]*$'))]") if node.text not in INITIALISM_EXCEPTIONS]
 	if nodes:
 		messages.append(LintMessage("t-030", "Initialism with spaces or without periods.", se.MESSAGE_TYPE_WARNING, filename, LintSubmessage.from_nodes(nodes)))
 
@@ -4054,7 +4056,7 @@ def lint(self, skip_lint_ignore: bool, allowed_messages: list[str] | None = None
 				# Collect certain `<abbr>` elements to check that required styles are included, but not in the colophon.
 				if not dom.xpath("/html/body/*[contains(@epub:type, 'colophon')]"):
 					# For now, temperature, acronym, and era are the only `<abbr>`s with required styles.
-					abbr_elements_requiring_css += dom.xpath("/html/body//abbr[re:test(@epub:type, '\\b(se:temperature|se:era|z3998:acronym)\\b')]")
+					abbr_elements_requiring_css += dom.xpath(f"/html/body//abbr[re:test(@epub:type, '\\b({"|".join(ABBR_REQUIRING_STYLES)})\\b')]")
 
 				# Check and log missing glossary keys.
 				if ebook_flags["has_glossary_search_key_map"] and file_path.name not in IGNORED_FILENAMES:
@@ -4262,7 +4264,7 @@ def lint(self, skip_lint_ignore: bool, allowed_messages: list[str] | None = None
 		attr = element.get_attr("epub:type")
 		if attr:
 			for value in attr.split():
-				if f"[epub|type~=\"{value}\"]" not in self.local_css:
+				if value in ABBR_REQUIRING_STYLES and f"[epub|type~=\"{value}\"]" not in self.local_css:
 					missing_styles.append(element)
 
 	messages += _lint_image_metadata_checks(self, ebook_flags["has_images"])
