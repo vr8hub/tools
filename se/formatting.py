@@ -219,6 +219,13 @@ def semanticate(xhtml: str) -> str:
 	for node in dom.xpath("/html/body//blockquote//*[name() = 'header' or name() = 'footer']"):
 		node.set_attr("role", "presentation")
 
+	# Add some semantics to abbreviations.
+	for node in dom.xpath("/html/body//abbr[re:test(., '^([A-Z]\\.)+') and not(re:test(@epub:type, 'z3998:(initialism|given-name)'))]"):
+		node.add_attr_value("epub:type", "z3998:initialism")
+
+	for node in dom.xpath("/html/body//abbr[re:test(., '^[A-Z]+$') and not(re:test(@epub:type, 'z3998:(acronym|initialism)|se:era'))]"):
+		node.add_attr_value("epub:type", "z3998:acronym")
+
 	xhtml = dom.to_string()
 
 	if is_colophon:
