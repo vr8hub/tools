@@ -1344,10 +1344,12 @@ def _run_epubcheck(self, work_compatible_epub_dir: Path) -> None:
 			vnu_dom = se.easy_xml.EasyXmlTree(stdout.read().decode().strip())
 
 			# The Nu Validator will return errors for epub-specific attributes (like `epub:prefix` and `epub:type`) because they're not defined in the XHTML5 spec. So, we simply filter out those errors.
-			# We also filter out `section lacks heading` messages, because they are warnings and we may have sections without headings (like dedications, frontispieces).
-			# Also filter out warnings about potentially bad values for datetimes, which are raised for years < 1000. This can occur in works like _Omega_ by Camille Flammarion.
-			# Also filter out errors about `<p>` being a child of `<hgroup>`. The spec changed but our current VNU version has not caught up.
-			messages = vnu_dom.xpath("/messages/*[not(re:test(./message, '^(Attribute (prefix|type) not allowed|(Section|Article) lacks heading.|Potentially bad value.+datetime|Element p not allowed as child of element hgroup in this context.)'))]")
+			# Also filter out:
+			# - `section lacks heading` messages, because they are warnings and we may have sections without headings (like dedications, frontispieces).
+			# - Warnings about potentially bad values for datetimes, which are raised for years < 1000. This can occur in works like _Omega_ by Camille Flammarion.
+			# - Errors about `<p>` being a child of `<hgroup>`. The spec changed but our current VNU version has not caught up.
+			# - `Year may be mistyped.` errors, because they are warnings about incorrect years, which may be correct for far-future sci fi (like `AD <time>4000</time>`).
+			messages = vnu_dom.xpath("/messages/*[not(re:test(./message, '^(Attribute (prefix|type) not allowed|(Section|Article) lacks heading\\.|Potentially bad value.+datetime|Element p not allowed as child of element hgroup in this context\\.|Double-check the text content of element.+Year may be mistyped\\.)'))]")
 
 			for message in messages:
 				message_text = message.xpath("./message")[0].inner_xml()
